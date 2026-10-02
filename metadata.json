@@ -1,0 +1,6 @@
+{
+  "name": "UsahaOS",
+  "description": "Business Operating System untuk UMKM - Satu sistem untuk seluruh operasional usaha.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
