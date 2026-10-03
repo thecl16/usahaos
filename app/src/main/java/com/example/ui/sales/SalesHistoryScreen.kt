@@ -211,8 +211,6 @@ fun SalesHistoryScreen(
                             description = if (sales.isEmpty())
                                 "Buka POS / Kasir untuk mulai melayani pelanggan dan mencatat transaksi penjualan."
                             else "Coba gunakan kata kunci pencarian nomor faktur yang lain.",
-                            primaryActionLabel = if (sales.isEmpty()) "Buka Kasir Sekarang" else null,
-                            onPrimaryAction = if (sales.isEmpty()) onOpenPOS else null
                         )
                     }
                 } else {

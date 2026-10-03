@@ -330,7 +330,7 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     fun switchBusiness(businessId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            businessRepo.switchBusiness(businessId)
+            businessRepo.switchActiveBusiness(businessId)
             _isLoading.value = false
             _isWorkspaceDialogOpen.value = false
             clearCart()
@@ -339,7 +339,40 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     }
 
     // ==========================================
-    // FEATURE TOGGLES
+    fun updateBusinessProfile(business: BusinessEntity) {
+    viewModelScope.launch {
+        _isLoading.value = true
+
+        val result = businessRepo.updateBusiness(business)
+
+        _isLoading.value = false
+
+        result.onSuccess {
+            showMessage("Profil usaha berhasil diperbarui.")
+        }.onFailure { error ->
+            showMessage(
+                error.message ?: "Gagal memperbarui profil usaha.",
+                isError = true
+            )
+        }
+    }
+}
+
+suspend fun previewNextProductCode(prefix: String): String {
+    val biz = currentBusiness.value ?: return ""
+    return productRepo.generateNextProductCode(biz.id, prefix)
+}
+
+suspend fun generateInternalBarcode(): String {
+    val biz = currentBusiness.value ?: return ""
+    return productRepo.generateInternalBarcode(biz.id)
+}
+
+suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity> {
+    return productRepo.getVariantsForProductList(productId)
+}
+
+// FEATURE TOGGLES
     // ==========================================
 
     fun toggleFeature(featureKey: String, isEnabled: Boolean) {
@@ -378,7 +411,7 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
                 businessId = biz.id,
                 name = name,
                 prefix = prefix,
-                businessType = businessType,
+                businessType = businessType.code,
                 description = description
             )
             _isLoading.value = false
@@ -401,7 +434,15 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     ) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = categoryRepo.updateCategory(category, name, prefix, description, isActive)
+            val result = categoryRepo.updateCategory(
+                id = category.id,
+                businessId = category.businessId,
+                name = name,
+                prefix = prefix,
+                businessType = category.businessType,
+                description = description,
+                isActive = isActive
+            )
             _isLoading.value = false
             result.onSuccess {
                 showMessage("Kategori '${name}' berhasil diperbarui.")

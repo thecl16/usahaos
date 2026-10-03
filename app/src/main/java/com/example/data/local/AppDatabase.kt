@@ -31,6 +31,7 @@ import com.example.data.local.entity.SaleItemEntity
 import com.example.data.local.entity.StockBalanceEntity
 import com.example.data.local.entity.StockMovementEntity
 import com.example.data.local.entity.UserEntity
+import com.example.data.local.migration.Migrations
 
 @Database(
     entities = [
@@ -51,7 +52,7 @@ import com.example.data.local.entity.UserEntity
         CashTransactionEntity::class
     ],
     version = 3,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -71,18 +72,24 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        const val DATABASE_NAME = "usahaos_database"
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "usahaos_database"
-                )
-                    .fallbackToDestructiveMigration()
-                    .build()
+                val instance = build(context, DATABASE_NAME)
                 INSTANCE = instance
                 instance
             }
+        }
+
+        internal fun build(context: Context, name: String): AppDatabase {
+            return Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                name
+            )
+                .addMigrations(*Migrations.ALL)
+                .build()
         }
     }
 }

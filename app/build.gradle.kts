@@ -56,11 +56,14 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  sourceSets { getByName("test").assets.srcDir("$projectDir/schemas") }
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
   }
 }
+
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.
@@ -121,6 +124,7 @@ dependencies {
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
+  testImplementation(libs.androidx.room.testing)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)

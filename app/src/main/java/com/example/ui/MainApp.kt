@@ -195,17 +195,44 @@ fun MainApp(viewModel: MainAppViewModel) {
                                     onGenerateInternalBarcode = { viewModel.generateInternalBarcode() },
                                     onGetVariantsForProduct = { pId -> viewModel.getVariantsForProduct(pId) },
                                     onCreateCategory = { name, prefix, bType, desc ->
-                                        viewModel.createCategory(name, prefix, bType, desc)
-                                    },
-                                    onUpdateCategory = { id, name, prefix, bType, desc, isActive ->
-                                        viewModel.updateCategory(id, name, prefix, bType, desc, isActive)
-                                    },
+    viewModel.createCategory(
+        name,
+        prefix,
+        com.example.domain.model.BusinessType.fromCode(bType),
+        desc
+    )
+},
+onUpdateCategory = { id, name, prefix, bType, desc, isActive ->
+    categories.find { it.id == id }?.let { category ->
+        viewModel.updateCategory(
+            category,
+            name,
+            prefix,
+            desc,
+            isActive
+        )
+    }
+},
                                     onToggleCategoryStatus = { catId, isActive ->
                                         viewModel.toggleCategoryStatus(catId, isActive)
                                     },
                                     onCreateProduct = { catId, name, sku, barcode, unit, buyPrice, sellPrice, minStk, track, desc, vList ->
-                                        viewModel.createProduct(catId, name, sku, barcode, unit, buyPrice, sellPrice, minStk, track, desc, vList)
-                                    },
+    viewModel.createProduct(
+        categoryId = catId,
+        productName = name,
+        sku = sku,
+        barcode = barcode,
+        unit = unit,
+        purchasePrice = buyPrice,
+        sellingPrice = sellPrice,
+        minStock = minStk,
+        trackStock = track,
+        allowNegativeStock = false,
+        description = desc,
+        initialStock = 0,
+        variants = vList
+    )
+},
                                     onUpdateProduct = { prod, vList ->
                                         viewModel.updateProduct(prod, vList)
                                     },
