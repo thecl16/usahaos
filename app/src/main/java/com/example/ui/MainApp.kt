@@ -1,42 +1,301 @@
 package com.example.ui
 
 import androidx.compose.foundation.layout.Box
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.foundation.layout.fillMaxSize
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.foundation.layout.padding
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.Icons
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.AccountBalance
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.Assessment
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.Inventory2
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.PointOfSale
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.Restaurant
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.ShoppingBag
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.ShoppingCart
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material.icons.filled.Work
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.DrawerValue
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.ModalDrawerSheet
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.ModalNavigationDrawer
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.Scaffold
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.SnackbarHost
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.SnackbarHostState
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.material3.rememberDrawerState
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.runtime.Composable
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.runtime.LaunchedEffect
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.runtime.getValue
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.runtime.remember
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.compose.ui.Modifier
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.auth.AuthScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.components.AppDrawerContent
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.components.AppTopBar
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.components.ModulePlaceholderScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.dashboard.DashboardScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.features.FeatureManagementScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.products.ProductManagementScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.setup.BusinessSetupScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.workspace.BusinessProfileScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.workspace.WorkspaceSwitcherDialog
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 import kotlinx.coroutines.launch
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.inventory.InventoryScreen
+import com.example.ui.sales.SalesHistoryScreen
+import com.example.ui.pos.POSScreen
+import com.example.ui.sales.SalesHistoryScreen
 
 @Composable
 fun MainApp(viewModel: MainAppViewModel) {
@@ -146,19 +405,13 @@ fun MainApp(viewModel: MainAppViewModel) {
                     }
 
                     is AppScreen.PosCashier -> {
-                        ModulePlaceholderScreen(
-                            title = "POS / Kasir Usaha",
-                            subtitle = "Transaksi kasir, keranjang, scan barcode, diskon, dan cetak struk",
-                            emptyTitle = "Belum Ada Transaksi Kasir",
-                            emptyDescription = "Setelah produk dan kasir aktif di Fase 2, transaksi penjualan dapat diproses secara cepat dengan kalkulasi HPP dan pemotongan stok otomatis.",
-                            icon = Icons.Default.PointOfSale,
-                            phaseNumber = "Fase 4",
-                            businessName = currentBusiness?.name ?: "",
-                            onBack = { viewModel.navigateBack() }
-                        )
-                    }
+            POSScreen(
+                viewModel = viewModel,
+                onNavigateBack = { viewModel.navigateBack() }
+            )
+        }
 
-                    is AppScreen.Products -> {
+        is AppScreen.Products -> {
                         when (screen.subTab) {
                             "stock" -> {
                                 ModulePlaceholderScreen(
@@ -173,18 +426,13 @@ fun MainApp(viewModel: MainAppViewModel) {
                                 )
                             }
                             "opname" -> {
-                                ModulePlaceholderScreen(
-                                    title = "Stock Opname & Penyesuaian",
-                                    subtitle = "Penyesuaian stok fisik toko dengan catatan sistem dan riwayat selisih",
-                                    emptyTitle = "Belum Ada Sesi Stock Opname",
-                                    emptyDescription = "Alur stock opname berkala akan diimplementasikan pada Fase 3.",
-                                    icon = Icons.Default.Inventory2,
-                                    phaseNumber = "Fase 3",
-                                    businessName = currentBusiness?.name ?: "",
-                                    onBack = { viewModel.navigateBack() }
-                                )
-                            }
-                            else -> {
+        InventoryScreen(
+            viewModel = viewModel,
+            initialTab = 1,
+            onNavigateBack = { viewModel.navigateBack() }
+        )
+    }
+    else -> {
                                 ProductManagementScreen(
                                     initialSubTab = screen.subTab,
                                     business = currentBusiness,
@@ -249,19 +497,14 @@ onUpdateCategory = { id, name, prefix, bType, desc, isActive ->
                     }
 
                     is AppScreen.Sales -> {
-                        ModulePlaceholderScreen(
-                            title = "Penjualan & Piutang Pelanggan",
-                            subtitle = "Riwayat seluruh faktur penjualan, data pelanggan, dan tempo piutang",
-                            emptyTitle = "Belum Ada Penjualan",
-                            emptyDescription = "Riwayat faktur penjualan dan status pembayaran pelanggan akan tercatat di sini saat transaksi kasir berjalan.",
-                            icon = Icons.Default.ShoppingCart,
-                            phaseNumber = "Fase 4",
-                            businessName = currentBusiness?.name ?: "",
-                            onBack = { viewModel.navigateBack() }
-                        )
-                    }
+            SalesHistoryScreen(
+                viewModel = viewModel,
+                onOpenPOS = { viewModel.navigateTo(AppScreen.PosCashier) },
+                onNavigateBack = { viewModel.navigateBack() }
+            )
+        }
 
-                    is AppScreen.Purchasing -> {
+        is AppScreen.Purchasing -> {
                         ModulePlaceholderScreen(
                             title = "Pembelian & Hutang Pemasok",
                             subtitle = "Order pembelian ke supplier, penerimaan barang, dan pelunasan hutang",
