@@ -132,6 +132,7 @@ fun POSScreen(
     val selectedCustomer by viewModel.selectedCustomer.collectAsState()
     val cartDiscount by viewModel.cartDiscount.collectAsState()
     val lastReceipt by viewModel.lastReceipt.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
@@ -625,6 +626,7 @@ fun POSScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
+                    enabled = cartItems.isNotEmpty() && !isLoading,
                     onClick = {
                         showCartSheet = false
                         showCheckoutDialog = true
@@ -646,12 +648,14 @@ fun POSScreen(
     if (showCheckoutDialog) {
         CheckoutDialog(
             totalAmount = cartGrandTotal,
+            isLoading = isLoading,
             onDismiss = { showCheckoutDialog = false },
-            onConfirmCheckout = { method, amountPaid, notes ->
+            onConfirmCheckout = { method, amountPaid, notes, ref ->
                 viewModel.checkout(
                     paymentMethod = method,
                     amountPaid = amountPaid,
                     notes = notes,
+                    paymentReference = ref,
                     onComplete = {
                         showCheckoutDialog = false
                     }
@@ -904,8 +908,9 @@ fun CartItemRow(
 @Composable
 fun CheckoutDialog(
     totalAmount: Long,
+    isLoading: Boolean = false,
     onDismiss: () -> Unit,
-    onConfirmCheckout: (paymentMethod: String, amountPaid: Long, notes: String) -> Unit
+    onConfirmCheckout: (paymentMethod: String, amountPaid: Long, notes: String, paymentReference: String?) -> Unit
 ) {
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply {
         maximumFractionDigits = 0
@@ -913,6 +918,7 @@ fun CheckoutDialog(
 
     var selectedMethod by remember { mutableStateOf("CASH") } // CASH, BANK_TRANSFER, QRIS, OTHER
     var cashPaidInput by remember { mutableStateOf("") }
+    var paymentReference by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
 
     val amountPaid = if (selectedMethod == "CASH") {
@@ -1091,6 +1097,18 @@ fun CheckoutDialog(
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = paymentReference,
+                        onValueChange = { paymentReference = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("pos_payment_reference_input"),
+                        singleLine = true,
+                        label = { Text("Nomor Referensi / Bukti (Opsional)") },
+                        placeholder = { Text("Contoh: TRF-123456") }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -1109,16 +1127,25 @@ fun CheckoutDialog(
 
                     Button(
                         onClick = {
-                            onConfirmCheckout(selectedMethod, amountPaid, notes)
+                            onConfirmCheckout(
+                                selectedMethod,
+                                amountPaid,
+                                notes,
+                                paymentReference.trim().ifBlank { null }
+                            )
                         },
-                        enabled = isCashValid,
+                        enabled = isCashValid && !isLoading,
                         modifier = Modifier
                             .weight(1f)
                             .testTag("pos_confirm_payment_btn"),
                         colors = ButtonDefaults.buttonColors(containerColor = UsahaBlue600),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Bayar Sekarang", fontWeight = FontWeight.Bold)
+                        if (isLoading) {
+                            Text("Memproses...", fontWeight = FontWeight.Bold)
+                        } else {
+                            Text("Bayar Sekarang", fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

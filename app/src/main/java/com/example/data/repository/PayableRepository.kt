@@ -4,6 +4,8 @@ import androidx.room.withTransaction
 import com.example.data.local.AppDatabase
 import com.example.data.local.dao.CashDao
 import com.example.data.local.dao.PayableDao
+import com.example.data.local.dao.PurchaseDao
+import com.example.data.local.dao.SupplierDao
 import com.example.data.local.entity.CashTransactionEntity
 import com.example.data.local.entity.PayableEntity
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +16,9 @@ import java.util.UUID
 class PayableRepository(
     private val database: AppDatabase,
     private val payableDao: PayableDao,
-    private val cashDao: CashDao
+    private val cashDao: CashDao,
+    private val purchaseDao: PurchaseDao = database.purchaseDao(),
+    private val supplierDao: SupplierDao = database.supplierDao()
 ) {
 
     fun getAllFlow(
@@ -45,24 +49,42 @@ class PayableRepository(
         paidAmount: Long = 0L,
         dueDate: Long? = null,
         notes: String = ""
-    ): Result<PayableEntity> {
+    ): Result<PayableEntity> = withContext(Dispatchers.IO) {
 
         if (amount < 0L) {
-            return Result.failure(
+            return@withContext Result.failure(
                 IllegalArgumentException("Jumlah utang tidak boleh negatif")
             )
         }
 
         if (paidAmount < 0L) {
-            return Result.failure(
+            return@withContext Result.failure(
                 IllegalArgumentException("Jumlah pembayaran tidak boleh negatif")
             )
         }
 
         if (paidAmount > amount) {
-            return Result.failure(
+            return@withContext Result.failure(
                 IllegalArgumentException("Pembayaran melebihi jumlah utang")
             )
+        }
+
+        if (supplierId != null) {
+            val supplier = supplierDao.getById(businessId, supplierId)
+            if (supplier == null) {
+                return@withContext Result.failure(
+                    IllegalArgumentException("Supplier tidak ditemukan atau bukan milik usaha aktif")
+                )
+            }
+        }
+
+        if (purchaseId != null) {
+            val purchase = purchaseDao.getById(businessId, purchaseId)
+            if (purchase == null) {
+                return@withContext Result.failure(
+                    IllegalArgumentException("Pembelian tidak ditemukan atau bukan milik usaha aktif")
+                )
+            }
         }
 
         val status = when {
@@ -86,7 +108,7 @@ class PayableRepository(
 
         payableDao.insert(payable)
 
-        return Result.success(payable)
+        Result.success(payable)
     }
 
     suspend fun update(
@@ -163,59 +185,85 @@ class PayableRepository(
             )
         }
 
-        database.withTransaction {
-
-            val payable = payableDao.getById(
-                businessId = businessId,
-                id = id
-            ) ?: throw IllegalArgumentException(
-                "Utang tidak ditemukan"
-            )
-
-            val remaining = payable.amount - payable.paidAmount
-
-            if (remaining <= 0L) {
-                throw IllegalArgumentException(
-                    "Utang sudah lunas"
-                )
-            }
-
-            if (amount > remaining) {
-                throw IllegalArgumentException(
-                    "Pembayaran melebihi sisa utang"
-                )
-            }
-
-            val newPaidAmount = payable.paidAmount + amount
-
-            val newStatus = when {
-                newPaidAmount >= payable.amount -> "PAID"
-                newPaidAmount > 0L -> "PARTIAL"
-                else -> "UNPAID"
-            }
-
-            val updatedPayable = payable.copy(
-                paidAmount = newPaidAmount,
-                status = newStatus
-            )
-
-            payableDao.update(updatedPayable)
-
-            cashDao.insertCashTransaction(
-                CashTransactionEntity(
-                    id = UUID.randomUUID().toString(),
+        runCatching {
+            database.withTransaction {
+                val payable = payableDao.getById(
                     businessId = businessId,
-                    type = "OUT",
-                    category = "PEMBAYARAN UTANG",
-                    amount = amount,
-                    referenceType = "PAYABLE",
-                    referenceId = payable.id,
-                    notes = "Pembayaran utang ${payable.supplierName}",
-                    createdAt = System.currentTimeMillis()
+                    id = id
+                ) ?: throw IllegalArgumentException(
+                    "Utang tidak ditemukan atau bukan milik usaha aktif"
                 )
-            )
 
-            Result.success(updatedPayable)
+                val remaining = payable.amount - payable.paidAmount
+
+                if (remaining <= 0L) {
+                    throw IllegalStateException(
+                        "Utang sudah lunas"
+                    )
+                }
+
+                if (amount > remaining) {
+                    throw IllegalArgumentException(
+                        "Pembayaran melebihi sisa utang"
+                    )
+                }
+
+                // Sync related PurchaseEntity if this payable is linked to a purchase
+                if (payable.purchaseId != null) {
+                    val purchase = purchaseDao.getById(businessId, payable.purchaseId)
+                    if (purchase != null) {
+                        val newPurchasePaid = purchase.paidAmount + amount
+                        if (newPurchasePaid > purchase.totalAmount) {
+                            throw IllegalArgumentException("Pembayaran melebihi total tagihan pembelian")
+                        }
+                        val newPurchaseStatus = when {
+                            newPurchasePaid >= purchase.totalAmount && purchase.totalAmount > 0L -> "PAID"
+                            newPurchasePaid > 0L -> "PARTIAL"
+                            else -> "UNPAID"
+                        }
+                        purchaseDao.updatePurchase(
+                            purchase.copy(
+                                paidAmount = newPurchasePaid,
+                                paymentStatus = newPurchaseStatus
+                            )
+                        )
+                    }
+                }
+
+                val newPaidAmount = payable.paidAmount + amount
+
+                val newStatus = when {
+                    newPaidAmount >= payable.amount -> "PAID"
+                    newPaidAmount > 0L -> "PARTIAL"
+                    else -> "UNPAID"
+                }
+
+                val updatedPayable = payable.copy(
+                    paidAmount = newPaidAmount,
+                    status = newStatus
+                )
+
+                payableDao.update(updatedPayable)
+
+                // ONLY CASH payments create a CashTransaction OUT and reduce cash balance
+                if (normalizedPaymentMethod == "CASH") {
+                    cashDao.insertCashTransaction(
+                        CashTransactionEntity(
+                            id = UUID.randomUUID().toString(),
+                            businessId = businessId,
+                            type = "OUT",
+                            category = "PEMBAYARAN UTANG",
+                            amount = amount,
+                            referenceType = "PAYABLE",
+                            referenceId = payable.id,
+                            notes = "Pembayaran utang ${payable.supplierName}",
+                            createdAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+
+                updatedPayable
+            }
         }
     }
 

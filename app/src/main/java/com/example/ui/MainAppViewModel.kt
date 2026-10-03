@@ -794,12 +794,21 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
         paymentMethod: String,
         amountPaid: Long,
         notes: String = "",
+        paymentReference: String? = null,
         onComplete: (CheckoutReceipt) -> Unit = {}
     ) {
-        val biz = currentBusiness.value ?: return
+        val biz = currentBusiness.value ?: run {
+            showMessage("Tidak ada usaha aktif terpilih", isError = true)
+            return
+        }
         val items = _cartItems.value
         if (items.isEmpty()) {
             showMessage("Keranjang belanja masih kosong", isError = true)
+            return
+        }
+
+        // DOUBLE-CHECKOUT PROTECTION: reject concurrent checkout triggers in ViewModel
+        if (_isLoading.value) {
             return
         }
 
@@ -814,7 +823,8 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
                 taxAmount = 0L,
                 paymentMethod = paymentMethod,
                 amountPaid = amountPaid,
-                notes = notes
+                notes = notes,
+                paymentReference = paymentReference
             )
             _isLoading.value = false
             result.onSuccess { receipt ->
@@ -850,6 +860,8 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
             return
         }
 
+        if (_isLoading.value) return
+
         viewModelScope.launch {
             _isLoading.value = true
             runCatching {
@@ -878,11 +890,17 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
         items: List<com.example.data.repository.PurchaseItemInput>,
         discountAmount: Long = 0L,
         paidAmount: Long = 0L,
+        paymentMethod: String = "CASH",
         dueDate: Long? = null,
         notes: String = "",
         onComplete: () -> Unit = {}
     ) {
-        val biz = currentBusiness.value ?: return
+        val biz = currentBusiness.value ?: run {
+            showMessage("Tidak ada usaha aktif terpilih", isError = true)
+            return
+        }
+
+        if (_isLoading.value) return
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -894,6 +912,7 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
                 items = items,
                 discountAmount = discountAmount,
                 paidAmount = paidAmount,
+                paymentMethod = paymentMethod,
                 dueDate = dueDate,
                 notes = notes
             )
@@ -914,7 +933,12 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
         paymentMethod: String = "CASH",
         onComplete: () -> Unit = {}
     ) {
-        val biz = currentBusiness.value ?: return
+        val biz = currentBusiness.value ?: run {
+            showMessage("Tidak ada usaha aktif terpilih", isError = true)
+            return
+        }
+
+        if (_isLoading.value) return
 
         viewModelScope.launch {
             _isLoading.value = true

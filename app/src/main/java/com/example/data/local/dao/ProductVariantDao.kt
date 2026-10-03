@@ -34,6 +34,12 @@ interface ProductVariantDao {
     @Query("SELECT * FROM product_variants WHERE businessId = :businessId AND barcode = :barcode LIMIT 1")
     suspend fun getVariantByBarcode(businessId: String, barcode: String): ProductVariantEntity?
 
+    @Query("SELECT * FROM product_variants WHERE id = :id LIMIT 1")
+    suspend fun getVariantById(id: String): ProductVariantEntity?
+
+    @Query("SELECT * FROM product_variants WHERE id = :id AND businessId = :businessId LIMIT 1")
+    suspend fun getVariantByIdForBusiness(businessId: String, id: String): ProductVariantEntity?
+
     @Query("UPDATE product_variants SET isActive = :isActive, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateVariantStatus(id: String, isActive: Boolean, updatedAt: Long = System.currentTimeMillis())
 

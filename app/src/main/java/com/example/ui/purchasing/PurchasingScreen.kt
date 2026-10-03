@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.data.repository.PurchaseItemInput
 import com.example.data.local.entity.PayableEntity
 import com.example.data.local.entity.ProductEntity
@@ -133,7 +135,7 @@ fun PurchasingScreen(
             suppliers = suppliers,
             products = products,
             onDismiss = { showPurchaseDialog = false },
-            onSave = { supplierId, supplierName, invoice, product, qty, cost, paid ->
+            onSave = { supplierId, supplierName, invoice, product, qty, cost, paid, method ->
                 viewModel.createPurchase(
                     supplierId = supplierId,
                     supplierName = supplierName,
@@ -147,6 +149,7 @@ fun PurchasingScreen(
                         )
                     ),
                     paidAmount = paid,
+                    paymentMethod = method,
                     onComplete = { showPurchaseDialog = false }
                 )
             }
@@ -157,11 +160,11 @@ fun PurchasingScreen(
         PayDialog(
             payable = payable,
             onDismiss = { selectedPayable = null },
-            onPay = { amount ->
+            onPay = { amount, method ->
                 viewModel.payPayable(
                     payableId = payable.id,
                     amount = amount,
-                    paymentMethod = "CASH",
+                    paymentMethod = method,
                     onComplete = { selectedPayable = null }
                 )
             }
@@ -346,7 +349,7 @@ private fun PurchaseDialog(
     suppliers: List<SupplierEntity>,
     products: List<ProductEntity>,
     onDismiss: () -> Unit,
-    onSave: (String?, String, String, ProductEntity, Int, Long, Long) -> Unit
+    onSave: (String?, String, String, ProductEntity, Int, Long, Long, String) -> Unit
 ) {
     var invoice by remember { mutableStateOf("") }
     var supplierName by remember { mutableStateOf("") }
@@ -354,6 +357,7 @@ private fun PurchaseDialog(
     var qty by remember { mutableStateOf("1") }
     var cost by remember { mutableStateOf("") }
     var paid by remember { mutableStateOf("") }
+    var selectedMethod by remember { mutableStateOf("CASH") }
     var supplierExpanded by remember { mutableStateOf(false) }
     var productExpanded by remember { mutableStateOf(false) }
 
@@ -439,6 +443,37 @@ private fun PurchaseDialog(
                     { paid = it.filter(Char::isDigit) },
                     label = { Text("Dibayar sekarang") }
                 )
+
+                if ((paid.toLongOrNull() ?: 0L) > 0L) {
+                    Text("Metode Pembayaran", style = MaterialTheme.typography.labelMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val methods = listOf(
+                            "CASH" to "Tunai",
+                            "BANK_TRANSFER" to "Transfer",
+                            "QRIS" to "QRIS",
+                            "OTHER" to "Lainnya"
+                        )
+                        methods.forEach { (key, label) ->
+                            val isSelected = selectedMethod == key
+                            OutlinedButton(
+                                onClick = { selectedMethod = key },
+                                modifier = Modifier.weight(1f),
+                                colors = if (isSelected) {
+                                    ButtonDefaults.outlinedButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                                    )
+                                } else {
+                                    ButtonDefaults.outlinedButtonColors()
+                                }
+                            ) {
+                                Text(label, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -456,7 +491,8 @@ private fun PurchaseDialog(
                         selectedProduct!!,
                         qty.toInt(),
                         cost.toLong(),
-                        paid.toLongOrNull() ?: 0L
+                        paid.toLongOrNull() ?: 0L,
+                        selectedMethod
                     )
                 }
             ) { Text("Simpan") }
@@ -471,9 +507,10 @@ private fun PurchaseDialog(
 private fun PayDialog(
     payable: PayableEntity,
     onDismiss: () -> Unit,
-    onPay: (Long) -> Unit
+    onPay: (amount: Long, paymentMethod: String) -> Unit
 ) {
     var amount by remember { mutableStateOf("") }
+    var selectedMethod by remember { mutableStateOf("CASH") }
     val remaining = payable.amount - payable.paidAmount
 
     AlertDialog(
@@ -483,18 +520,56 @@ private fun PayDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(payable.supplierName)
                 Text("Sisa hutang: ${formatRupiah(remaining)}")
+
                 OutlinedTextField(
-                    amount,
-                    { amount = it.filter(Char::isDigit) },
-                    label = { Text("Jumlah pembayaran") }
+                    value = amount,
+                    onValueChange = { amount = it.filter(Char::isDigit) },
+                    label = { Text("Jumlah pembayaran") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                Text("Metode Pembayaran", style = MaterialTheme.typography.labelMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val methods = listOf(
+                        "CASH" to "Tunai",
+                        "BANK_TRANSFER" to "Transfer",
+                        "QRIS" to "QRIS",
+                        "OTHER" to "Lainnya"
+                    )
+                    methods.forEach { (key, label) ->
+                        val isSelected = selectedMethod == key
+                        OutlinedButton(
+                            onClick = { selectedMethod = key },
+                            modifier = Modifier.weight(1f),
+                            colors = if (isSelected) {
+                                ButtonDefaults.outlinedButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            } else {
+                                ButtonDefaults.outlinedButtonColors()
+                            }
+                        ) {
+                            Text(label, fontSize = 11.sp)
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
+            val amt = amount.toLongOrNull() ?: 0L
+            val buttonLabel = when (selectedMethod) {
+                "CASH" -> "Bayar Tunai"
+                "BANK_TRANSFER" -> "Bayar Transfer"
+                "QRIS" -> "Bayar QRIS"
+                else -> "Bayar Lainnya"
+            }
             Button(
-                enabled = (amount.toLongOrNull() ?: 0L) in 1..remaining,
-                onClick = { onPay(amount.toLong()) }
-            ) { Text("Bayar Tunai") }
+                enabled = amt in 1..remaining,
+                onClick = { onPay(amt, selectedMethod) }
+            ) { Text(buttonLabel) }
         },
         dismissButton = {
             OutlinedButton(onClick = onDismiss) { Text("Batal") }

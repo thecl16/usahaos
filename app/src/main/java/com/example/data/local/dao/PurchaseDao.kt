@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.data.local.entity.PurchaseEntity
 import com.example.data.local.entity.PurchaseItemEntity
 import kotlinx.coroutines.flow.Flow
@@ -65,6 +66,11 @@ interface PurchaseDao {
 
     @Insert
     suspend fun insertPurchase(
+        purchase: PurchaseEntity
+    )
+
+    @Update
+    suspend fun updatePurchase(
         purchase: PurchaseEntity
     )
 
