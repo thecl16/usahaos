@@ -2,6 +2,7 @@ package com.example.ui.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +68,7 @@ fun AuthScreen(
     isLoading: Boolean,
     onLogin: (email: String, pass: String) -> Unit,
     onRegister: (fullName: String, email: String, phone: String, pass: String) -> Unit,
-    onResetPassword: (email: String, newPass: String) -> Unit
+    onResetPassword: ((email: String, newPass: String) -> Unit)? = null
 ) {
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Login, 1: Register, 2: Forgot Password
 
@@ -188,237 +189,263 @@ fun AuthScreen(
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     } else {
-                        // Forgot Password Header
+                        // Security Notice for Account Recovery
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Lupa Kata Sandi",
+                                text = "Pemulihan Kata Sandi",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = UsahaNavy900
                             )
                         }
                         Text(
-                            text = "Masukkan email dan buat kata sandi baru untuk akun Anda.",
+                            text = "Kebijakan keamanan akun UsahaOS.",
                             style = MaterialTheme.typography.bodySmall,
                             color = UsahaSlate500,
                             modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
                         )
                     }
 
-                    // Form Fields
-                    if (selectedTab == 1) {
-                        // Register extra fields
-                        OutlinedTextField(
-                            value = fullName,
-                            onValueChange = { fullName = it },
-                            label = { Text("Nama Lengkap") },
-                            leadingIcon = {
-                                Icon(Icons.Default.Person, contentDescription = "Nama", tint = UsahaSlate500)
+                    if (selectedTab == 2) {
+                        // Secure policy notice
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFEFF6FF), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(12.dp))
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Keamanan",
+                                tint = UsahaBlue600,
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Verifikasi Akun Diperlukan",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = UsahaNavy900
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Untuk mencegah pengambilalihan akun dan melindungi data bisnis Anda, reset kata sandi mandiri tanpa verifikasi dinonaktifkan.\n\nSilakan masuk dengan kata sandi saat ini atau hubungi pemilik/administrator workspace usaha Anda untuk verifikasi identitas akun.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = UsahaSlate500,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Button(
+                            onClick = {
+                                selectedTab = 0
+                                localError = null
                             },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .testTag("auth_back_to_login_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = UsahaBlue600),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(
+                                text = "Kembali ke Halaman Masuk",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+                    } else {
+                        // Form Fields for Login (0) & Register (1)
+                        if (selectedTab == 1) {
+                            // Register extra fields
+                            OutlinedTextField(
+                                value = fullName,
+                                onValueChange = { fullName = it },
+                                label = { Text("Nama Lengkap") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Person, contentDescription = "Nama", tint = UsahaSlate500)
+                                },
+                                singleLine = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("auth_name_input")
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedTextField(
+                                value = phone,
+                                onValueChange = { phone = it },
+                                label = { Text("Nomor Telepon / WhatsApp") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Phone, contentDescription = "Telepon", tint = UsahaSlate500)
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                singleLine = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("auth_phone_input")
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+
+                        // Email field (Common)
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Alamat Email") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = "Email", tint = UsahaSlate500)
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("auth_name_input")
+                                .testTag("auth_email_input")
                         )
+
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Password field
                         OutlinedTextField(
-                            value = phone,
-                            onValueChange = { phone = it },
-                            label = { Text("Nomor Telepon / WhatsApp") },
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Kata Sandi") },
                             leadingIcon = {
-                                Icon(Icons.Default.Phone, contentDescription = "Telepon", tint = UsahaSlate500)
+                                Icon(Icons.Default.Lock, contentDescription = "Sandi", tint = UsahaSlate500)
                             },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("auth_phone_input")
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    // Email field (Common)
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Alamat Email") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = "Email", tint = UsahaSlate500)
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("auth_email_input")
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Password field
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text(if (selectedTab == 2) "Kata Sandi Baru" else "Kata Sandi") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Lock, contentDescription = "Sandi", tint = UsahaSlate500)
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { showPassword = !showPassword }) {
-                                Icon(
-                                    imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = "Lihat Sandi"
-                                )
-                            }
-                        },
-                        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("auth_password_input")
-                    )
-
-                    if (selectedTab == 1 || selectedTab == 2) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(
-                            value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
-                            label = { Text("Konfirmasi Kata Sandi") },
-                            leadingIcon = {
-                                Icon(Icons.Default.Lock, contentDescription = "Konfirmasi Sandi", tint = UsahaSlate500)
+                            trailingIcon = {
+                                IconButton(onClick = { showPassword = !showPassword }) {
+                                    Icon(
+                                        imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = "Lihat Sandi"
+                                    )
+                                }
                             },
                             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("auth_confirm_password_input")
+                                .testTag("auth_password_input")
                         )
-                    }
 
-                    if (selectedTab == 0) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    selectedTab = 2
-                                    localError = null
+                        if (selectedTab == 1) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it },
+                                label = { Text("Konfirmasi Kata Sandi") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Lock, contentDescription = "Konfirmasi Sandi", tint = UsahaSlate500)
                                 },
-                                modifier = Modifier.testTag("auth_forgot_password_btn")
-                            ) {
-                                Text(
-                                    text = "Lupa kata sandi?",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = UsahaBlue600
-                                )
-                            }
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    // Local error message display
-                    AnimatedVisibility(visible = localError != null) {
-                        Text(
-                            text = localError ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-                    }
-
-                    // Submit Button
-                    Button(
-                        onClick = {
-                            localError = null
-                            when (selectedTab) {
-                                0 -> { // Login
-                                    if (email.isBlank() || password.isBlank()) {
-                                        localError = "Email dan kata sandi wajib diisi"
-                                    } else {
-                                        onLogin(email, password)
-                                    }
-                                }
-                                1 -> { // Register
-                                    if (fullName.isBlank()) {
-                                        localError = "Nama lengkap wajib diisi"
-                                    } else if (!email.contains("@")) {
-                                        localError = "Format email tidak valid"
-                                    } else if (password.length < 6) {
-                                        localError = "Kata sandi minimal 6 karakter"
-                                    } else if (password != confirmPassword) {
-                                        localError = "Konfirmasi kata sandi tidak cocok"
-                                    } else {
-                                        onRegister(fullName, email, phone, password)
-                                    }
-                                }
-                                2 -> { // Reset password
-                                    if (!email.contains("@")) {
-                                        localError = "Format email tidak valid"
-                                    } else if (password.length < 6) {
-                                        localError = "Kata sandi baru minimal 6 karakter"
-                                    } else if (password != confirmPassword) {
-                                        localError = "Konfirmasi kata sandi tidak cocok"
-                                    } else {
-                                        onResetPassword(email, password)
-                                    }
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .testTag("auth_submit_btn"),
-                        colors = ButtonDefaults.buttonColors(containerColor = UsahaBlue600),
-                        shape = RoundedCornerShape(10.dp),
-                        enabled = !isLoading
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
+                                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                singleLine = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("auth_confirm_password_input")
                             )
-                        } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = when (selectedTab) {
-                                        0 -> "Masuk ke UsahaOS"
-                                        1 -> "Daftar Akun Baru"
-                                        else -> "Simpan Kata Sandi Baru"
-                                    },
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Submit",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
                         }
-                    }
 
-                    if (selectedTab == 2) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = { selectedTab = 0 },
+                        if (selectedTab == 0) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        selectedTab = 2
+                                        localError = null
+                                    },
+                                    modifier = Modifier.testTag("auth_forgot_password_btn")
+                                ) {
+                                    Text(
+                                        text = "Lupa kata sandi?",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = UsahaBlue600
+                                    )
+                                }
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        // Local error message display
+                        AnimatedVisibility(visible = localError != null) {
+                            Text(
+                                text = localError ?: "",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                        }
+
+                        // Submit Button
+                        Button(
+                            onClick = {
+                                localError = null
+                                when (selectedTab) {
+                                    0 -> { // Login
+                                        if (email.isBlank() || password.isBlank()) {
+                                            localError = "Email dan kata sandi wajib diisi"
+                                        } else {
+                                            onLogin(email, password)
+                                        }
+                                    }
+                                    1 -> { // Register
+                                        if (fullName.isBlank()) {
+                                            localError = "Nama lengkap wajib diisi"
+                                        } else if (!email.contains("@")) {
+                                            localError = "Format email tidak valid"
+                                        } else if (password.length < 6) {
+                                            localError = "Kata sandi minimal 6 karakter"
+                                        } else if (password != confirmPassword) {
+                                            localError = "Konfirmasi kata sandi tidak cocok"
+                                        } else {
+                                            onRegister(fullName, email, phone, password)
+                                        }
+                                    }
+                                }
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("auth_back_to_login_btn")
+                                .height(50.dp)
+                                .testTag("auth_submit_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = UsahaBlue600),
+                            shape = RoundedCornerShape(10.dp),
+                            enabled = !isLoading
                         ) {
-                            Text(
-                                text = "Kembali ke Halaman Masuk",
-                                color = UsahaSlate500,
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = when (selectedTab) {
+                                            0 -> "Masuk ke UsahaOS"
+                                            else -> "Daftar Akun Baru"
+                                        },
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowForward,
+                                        contentDescription = "Submit",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

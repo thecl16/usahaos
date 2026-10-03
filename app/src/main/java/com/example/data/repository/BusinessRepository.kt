@@ -94,8 +94,21 @@ class BusinessRepository(
         Result.success(business)
     }
 
-    suspend fun switchActiveBusiness(businessId: String) = withContext(Dispatchers.IO) {
+    suspend fun switchActiveBusiness(businessId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        val session = activeSessionDao.getSession()
+        val userId = session?.currentUserId
+            ?: return@withContext Result.failure(IllegalStateException("Sesi pengguna tidak valid. Silakan login kembali."))
+
+        val business = businessDao.getBusinessById(businessId)
+            ?: return@withContext Result.failure(IllegalArgumentException("Usaha tidak ditemukan."))
+
+        val membership = businessUserDao.getMembership(businessId, userId)
+        if (membership == null || !membership.isActive) {
+            return@withContext Result.failure(IllegalAccessException("Anda tidak memiliki akses aktif ke usaha ini."))
+        }
+
         activeSessionDao.updateCurrentBusiness(businessId)
+        Result.success(Unit)
     }
 
     suspend fun updateBusiness(business: BusinessEntity): Result<Unit> = withContext(Dispatchers.IO) {

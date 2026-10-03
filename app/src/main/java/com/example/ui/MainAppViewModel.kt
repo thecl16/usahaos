@@ -86,7 +86,7 @@ data class UiMessage(
 
 class MainAppViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
-    private val authRepo = AuthRepository(db.userDao(), db.activeSessionDao())
+    private val authRepo = AuthRepository(db.userDao(), db.activeSessionDao(), db.businessUserDao())
     private val businessRepo = BusinessRepository(db.businessDao(), db.businessUserDao(), db.featureFlagDao(), db.activeSessionDao())
     private val featureRepo = FeatureToggleRepository(db.featureFlagDao())
     private val categoryRepo = CategoryRepository(db.categoryDao())
@@ -255,6 +255,20 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            authRepo.activeSession.collect { session ->
+                val userId = session?.currentUserId
+                if (userId != null && session.currentBusinessId == null) {
+                    val businesses = businessRepo.getUserBusinessesList(userId)
+                    if (businesses.isNotEmpty()) {
+                        businessRepo.switchActiveBusiness(businesses.first().id)
+                    }
+                }
+            }
+        }
+    }
+
     fun navigateTo(screen: AppScreen, addToBackStack: Boolean = true) {
         if (addToBackStack && _currentScreen.value != screen) {
             screenBackStack.add(_currentScreen.value)
@@ -321,15 +335,15 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun resetPassword(email: String, newPass: String) {
+    fun resetPassword(currentPass: String, newPass: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = authRepo.resetPassword(email, newPass)
+            val result = authRepo.resetPassword(currentPass, newPass)
             _isLoading.value = false
             result.onSuccess {
-                showMessage("Kata sandi berhasil diatur ulang. Silakan masuk.")
+                showMessage("Kata sandi berhasil diperbarui.")
             }.onFailure { error ->
-                showMessage(error.message ?: "Gagal reset kata sandi", isError = true)
+                showMessage(error.message ?: "Gagal memperbarui kata sandi", isError = true)
             }
         }
     }
@@ -378,11 +392,15 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     fun switchBusiness(businessId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            businessRepo.switchActiveBusiness(businessId)
+            val result = businessRepo.switchActiveBusiness(businessId)
             _isLoading.value = false
-            _isWorkspaceDialogOpen.value = false
-            clearCart()
-            showMessage("Berhasil beralih ke workspace usaha baru.")
+            result.onSuccess {
+                _isWorkspaceDialogOpen.value = false
+                clearCart()
+                showMessage("Berhasil beralih ke workspace usaha baru.")
+            }.onFailure { error ->
+                showMessage(error.message ?: "Gagal beralih ke usaha yang dipilih", isError = true)
+            }
         }
     }
 
