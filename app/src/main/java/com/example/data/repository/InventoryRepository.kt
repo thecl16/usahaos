@@ -106,7 +106,7 @@ class InventoryRepository(
             return@withContext Result.failure(IllegalArgumentException("Jumlah stok keluar harus lebih besar dari 0"))
         }
 
-        val product = productDao.getProductById(productId)
+        val product = productDao.getProductByIdForBusiness(businessId, productId)
             ?: return@withContext Result.failure(IllegalArgumentException("Produk tidak ditemukan"))
 
         database.withTransaction {
@@ -161,7 +161,7 @@ class InventoryRepository(
         newQuantity: Int,
         notes: String = ""
     ): Result<StockMovementEntity> = withContext(Dispatchers.IO) {
-        val product = productDao.getProductById(productId)
+        val product = productDao.getProductByIdForBusiness(businessId, productId)
             ?: return@withContext Result.failure(IllegalArgumentException("Produk tidak ditemukan"))
 
         if (newQuantity < 0 && !product.allowNegativeStock) {
@@ -215,7 +215,7 @@ class InventoryRepository(
         physicalStock: Int,
         notes: String = ""
     ): Result<StockMovementEntity> = withContext(Dispatchers.IO) {
-        val product = productDao.getProductById(productId)
+        val product = productDao.getProductByIdForBusiness(businessId, productId)
             ?: return@withContext Result.failure(IllegalArgumentException("Produk tidak ditemukan"))
 
         if (physicalStock < 0 && !product.allowNegativeStock) {
