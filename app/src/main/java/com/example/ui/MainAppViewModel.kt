@@ -26,6 +26,10 @@ import com.example.data.repository.FeatureToggleRepository
 import com.example.data.repository.InventoryRepository
 import com.example.data.repository.PosRepository
 import com.example.data.repository.ProductRepository
+import com.example.data.repository.SupplierRepository
+import com.example.data.repository.PurchaseRepository
+import com.example.data.repository.PayableRepository
+import com.example.data.repository.ExpenseRepository
 import com.example.data.repository.VariantInput
 import com.example.domain.model.BusinessType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,6 +94,25 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
     private val inventoryRepo = InventoryRepository(db, db.inventoryDao(), db.productDao())
     private val posRepo = PosRepository(db, db.posDao(), db.inventoryDao(), db.cashDao(), db.productDao())
     private val customerRepo = CustomerRepository(db.customerDao())
+    private val supplierRepo = SupplierRepository(db.supplierDao())
+    private val purchaseRepo = PurchaseRepository(
+        db,
+        db.purchaseDao(),
+        db.payableDao(),
+        db.inventoryDao(),
+        db.productDao(),
+        db.cashDao()
+    )
+    private val payableRepo = PayableRepository(
+        db,
+        db.payableDao(),
+        db.cashDao()
+    )
+    private val expenseRepo = ExpenseRepository(
+        db,
+        db.expenseDao(),
+        db.cashDao()
+    )
 
     // Active session observation
     val activeSession = authRepo.activeSession.stateIn(
@@ -173,6 +196,31 @@ class MainAppViewModel(application: Application) : AndroidViewModel(application)
 
     val customers: StateFlow<List<CustomerEntity>> = currentBusiness.flatMapLatest { business ->
         if (business != null) customerRepo.getCustomersFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // PHASE 5: Purchasing, Payables & Finance
+    val suppliers = currentBusiness.flatMapLatest { business ->
+        if (business != null) supplierRepo.getAllFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val purchases = currentBusiness.flatMapLatest { business ->
+        if (business != null) purchaseRepo.getAllFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val unpaidPurchases = currentBusiness.flatMapLatest { business ->
+        if (business != null) purchaseRepo.getUnpaidFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val payables = currentBusiness.flatMapLatest { business ->
+        if (business != null) payableRepo.getAllFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val unpaidPayables = currentBusiness.flatMapLatest { business ->
+        if (business != null) payableRepo.getUnpaidFlow(business.id) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val expenses = currentBusiness.flatMapLatest { business ->
+        if (business != null) expenseRepo.getAllFlow(business.id) else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // POS Cart State
@@ -765,6 +813,143 @@ suspend fun getVariantsForProduct(productId: String): List<ProductVariantEntity>
     fun clearLastReceipt() {
         _lastReceipt.value = null
     }
+
+    // ==========================================
+    // PHASE 5: PURCHASING & FINANCE ACTIONS
+    // ==========================================
+
+    fun createSupplier(
+        name: String,
+        phone: String?,
+        email: String?,
+        address: String?,
+        notes: String = "",
+        onComplete: () -> Unit = {}
+    ) {
+        val biz = currentBusiness.value ?: return
+        if (name.trim().isBlank()) {
+            showMessage("Nama supplier wajib diisi.", isError = true)
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            runCatching {
+                supplierRepo.create(
+                    businessId = biz.id,
+                    name = name,
+                    phone = phone,
+                    email = email,
+                    address = address,
+                    notes = notes
+                )
+            }.onSuccess {
+                showMessage("Supplier '${it.name}' berhasil ditambahkan.")
+                onComplete()
+            }.onFailure {
+                showMessage(it.message ?: "Gagal menambah supplier.", isError = true)
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun createPurchase(
+        supplierId: String?,
+        supplierName: String,
+        invoiceNumber: String,
+        items: List<com.example.data.repository.PurchaseItemInput>,
+        discountAmount: Long = 0L,
+        paidAmount: Long = 0L,
+        dueDate: Long? = null,
+        notes: String = "",
+        onComplete: () -> Unit = {}
+    ) {
+        val biz = currentBusiness.value ?: return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = purchaseRepo.createPurchase(
+                businessId = biz.id,
+                supplierId = supplierId,
+                supplierName = supplierName,
+                invoiceNumber = invoiceNumber,
+                items = items,
+                discountAmount = discountAmount,
+                paidAmount = paidAmount,
+                dueDate = dueDate,
+                notes = notes
+            )
+            _isLoading.value = false
+
+            result.onSuccess {
+                showMessage("Pembelian ${it.invoiceNumber} berhasil disimpan. Stok bertambah.")
+                onComplete()
+            }.onFailure {
+                showMessage(it.message ?: "Gagal menyimpan pembelian.", isError = true)
+            }
+        }
+    }
+
+    fun payPayable(
+        payableId: String,
+        amount: Long,
+        paymentMethod: String = "CASH",
+        onComplete: () -> Unit = {}
+    ) {
+        val biz = currentBusiness.value ?: return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = payableRepo.pay(
+                businessId = biz.id,
+                id = payableId,
+                amount = amount,
+                paymentMethod = paymentMethod
+            )
+            _isLoading.value = false
+
+            result.onSuccess {
+                showMessage("Pembayaran utang berhasil dicatat.")
+                onComplete()
+            }.onFailure {
+                showMessage(it.message ?: "Gagal membayar utang.", isError = true)
+            }
+        }
+    }
+
+    fun createExpense(
+        category: String,
+        description: String,
+        amount: Long,
+        paymentMethod: String,
+        referenceNumber: String? = null,
+        notes: String = "",
+        onComplete: () -> Unit = {}
+    ) {
+        val biz = currentBusiness.value ?: return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = expenseRepo.create(
+                businessId = biz.id,
+                category = category,
+                description = description,
+                amount = amount,
+                paymentMethod = paymentMethod,
+                referenceNumber = referenceNumber,
+                notes = notes
+            )
+            _isLoading.value = false
+
+            result.onSuccess {
+                showMessage("Pengeluaran berhasil dicatat.")
+                onComplete()
+            }.onFailure {
+                showMessage(it.message ?: "Gagal mencatat pengeluaran.", isError = true)
+            }
+        }
+    }
+
 
     fun getSaleDetail(
         saleId: String,

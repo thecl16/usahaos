@@ -233,6 +233,8 @@ import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.pos.POSScreen
 import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.components.ModulePlaceholderScreen
+import com.example.ui.purchasing.PurchasingScreen
+import com.example.ui.finance.FinanceScreen
 import com.example.ui.sales.SalesHistoryScreen
 import com.example.ui.pos.POSScreen
 import com.example.ui.sales.SalesHistoryScreen
@@ -505,30 +507,20 @@ onUpdateCategory = { id, name, prefix, bType, desc, isActive ->
         }
 
         is AppScreen.Purchasing -> {
-                        ModulePlaceholderScreen(
-                            title = "Pembelian & Hutang Pemasok",
-                            subtitle = "Order pembelian ke supplier, penerimaan barang, dan pelunasan hutang",
-                            emptyTitle = "Belum Ada Pembelian",
-                            emptyDescription = "Catatan pembelian bahan/produk dari supplier untuk menambah stok masuk dan memantau hutang usaha.",
-                            icon = Icons.Default.ShoppingBag,
-                            phaseNumber = "Fase 5",
-                            businessName = currentBusiness?.name ?: "",
-                            onBack = { viewModel.navigateBack() }
-                        )
-                    }
+    PurchasingScreen(
+        viewModel = viewModel,
+        initialTab = 0,
+        onNavigateBack = { viewModel.navigateBack() }
+    )
+}
 
                     is AppScreen.Finance -> {
-                        ModulePlaceholderScreen(
-                            title = "Keuangan & Kas Operasional",
-                            subtitle = "Buku kas, pencatatan biaya pengeluaran, dan arus kas masuk-keluar",
-                            emptyTitle = "Belum Ada Transaksi Kas",
-                            emptyDescription = "Semua pergerakan kas masuk dari penjualan dan kas keluar untuk beban operasional akan terekap secara riil di sini.",
-                            icon = Icons.Default.AccountBalance,
-                            phaseNumber = "Fase 5",
-                            businessName = currentBusiness?.name ?: "",
-                            onBack = { viewModel.navigateBack() }
-                        )
-                    }
+    FinanceScreen(
+        viewModel = viewModel,
+        initialTab = 0,
+        onNavigateBack = { viewModel.navigateBack() }
+    )
+}
 
                     is AppScreen.Reports -> {
                         ModulePlaceholderScreen(

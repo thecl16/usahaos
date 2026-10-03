@@ -30,18 +30,42 @@ class AppDatabaseMigrationTest {
     fun exportedSchemaV3_opensWithProductionConfig_andPreservesData() {
         helper.createDatabase(testDb, 3).apply {
             execSQL(
-                "INSERT INTO businesses (id, name, type, address, phone, email, currency, createdAt, updatedAt) " +
-                    "VALUES ('biz-1', 'Toko Uji', 'RETAIL', 'Jl. Uji 1', '0800', 'uji@example.test', 'IDR', 1, 1)"
+                """
+                INSERT INTO businesses (
+                    id, name, type, address, phone, email,
+                    currency, createdAt, updatedAt
+                )
+                VALUES (
+                    'biz-1',
+                    'Toko Uji',
+                    'RETAIL',
+                    'Jl. Uji 1',
+                    '0800',
+                    'uji@example.test',
+                    'IDR',
+                    1,
+                    1
+                )
+                """.trimIndent()
             )
             close()
         }
 
-        helper.runMigrationsAndValidate(testDb, 3, true, *Migrations.ALL)
+        helper.runMigrationsAndValidate(
+            testDb,
+            4,
+            true,
+            *Migrations.ALL
+        )
 
         val context = ApplicationProvider.getApplicationContext<Context>()
         val db = AppDatabase.build(context, testDb)
+
         try {
-            val business = runBlocking { db.businessDao().getBusinessById("biz-1") }
+            val business = runBlocking {
+                db.businessDao().getBusinessById("biz-1")
+            }
+
             assertEquals("Toko Uji", business?.name)
         } finally {
             db.close()

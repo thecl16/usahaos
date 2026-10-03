@@ -20,4 +20,16 @@ interface CashDao {
 
     @Query("SELECT COALESCE(SUM(CASE WHEN type = 'IN' THEN amount ELSE -amount END), 0) FROM cash_transactions WHERE businessId = :businessId")
     suspend fun getCashBalanceSync(businessId: String): Long
+
+    @Query("""
+        DELETE FROM cash_transactions
+        WHERE businessId = :businessId
+        AND referenceType = :referenceType
+        AND referenceId = :referenceId
+    """)
+    suspend fun deleteByReference(
+        businessId: String,
+        referenceType: String,
+        referenceId: String
+    )
 }
